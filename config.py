@@ -7,11 +7,11 @@ class Config:
         # Raw data file paths
         self.kg_path = f'{self.raw_data_dir}/{self.dataset_name}/kg.txt'
         self.item2entity_path = f'{self.raw_data_dir}/{self.dataset_name}/item_index2entity_id.txt'
-        self.rating_path = f'{self.raw_data_dir}/{self.dataset_name}/sorted.csv'
+        self.rating_path = f'{self.raw_data_dir}/{self.dataset_name}/ratings.csv'
 
         # Parameters to preprocess ratings.csv
         self.separator = ','
-        self.threshold = 4                  # Threshold of rating to distinguish pos and neg reaction
+        self.threshold = 3                  # Threshold of rating to distinguish pos and neg reaction
         self.minimum_interactions = 200     # Remove user with less than 200 interactions
 
         # Parameters to preprocess kg.txt
