@@ -29,7 +29,7 @@ def train(config):
         for u in range(num_users):
             user_id, item_ids, rates = simulator.get_data(u)
             x = []
-            positive_ids = []
+            candidates = []
             for t, (item_id, rate) in enumerate(zip(item_ids, rates)):
                 # TODO
                 # Embed item using GCN Algorithm1 line 6 ~ 7
@@ -41,7 +41,9 @@ def train(config):
                 # TODO
                 # Candidate selection and embedding
                 if rate > config.threshold:
-                    positive_ids.append(item_id)
+                    n_hop_dict = graph.get_n_hop(item_id)
+                    candidates.extend(n_hop_dict[1])
+                    candidates = list(set(candidates))      # Need to get rid of recommended items
 
                 candidates_embeddings = item_ids  # Embed each item in n_hop_dict using each item's n_hop_dict
                 # candidates_embeddings' shape = (# of candidates, config.item_embed_dim)

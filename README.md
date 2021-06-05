@@ -6,8 +6,8 @@
 1. [Baseline - KGQR](#baseline)
 2. [File Tree](#filetree)
 
-## Baseline <a name="baseline"></a>
-First trial to use knowledge graph prior on interactive recommendation system based on reinforcement learning. 
+## Baseline - KGQR <a name="baseline"></a>
+KGQR is the first trial to use knowledge graph prior on interactive recommendation system based on reinforcement learning. 
 
 ["Interactive Recommender System via Knowledge
 Graph-enhanced Reinforcement Learning"](https://arxiv.org/pdf/2006.10389.pdf)

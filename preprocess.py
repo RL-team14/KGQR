@@ -118,16 +118,16 @@ def read_kg(kg_path, entity_vocab, relation_vocab):
                 relation_vocab[relation] = len(relation_vocab)
 
             # Undirected graph
-            kg[entity_vocab[head]].append((entity_vocab[head], relation_vocab[relation], entity_vocab[tail]))
-            kg[entity_vocab[tail]].append((entity_vocab[tail], relation_vocab[relation], entity_vocab[head]))
+            kg[entity_vocab[head]].append(entity_vocab[tail])
+            kg[entity_vocab[tail]].append(entity_vocab[head])
 
     n_hop_kg = {}
-    for entity in entity_vocab:
+    for entity in entity_vocab.values():
         n_hop_kg[entity] = {1: [], 2: []}
         n_hop_kg[entity][1] = kg[entity]
-        for _, _, t in kg[entity]:
+        for t in kg[entity]:
             n_hop_kg[entity][2].extend(kg[t])
-        n_hop_kg[entity][2] = list(set(n_hop_kg[entity][2]))
+        n_hop_kg[entity][2] = list(set(n_hop_kg[entity][2]) - set(n_hop_kg[entity][1]))
 
     print(f'Logging Info - num of entities: {len(entity_vocab)}, num of relations: {len(relation_vocab)}')
     return n_hop_kg
@@ -137,26 +137,32 @@ def process_data(config):
     os.makedirs(config.preprocess_results_dir, exist_ok=True)
 
     # Sort rating file based on user id and timestamp
-    df = pd.read_csv(f'{config.raw_data_dir}/{config.dataset_name}/ratings.csv', delimiter=',')
-    df = df.sort_values(by=['userId', 'timestamp'], ascending=[True, True])
+    # df = pd.read_csv(f'{config.raw_data_dir}/{config.dataset_name}/ratings.csv', delimiter=',')
+    # df = df.sort_values(by=['userId', 'timestamp'], ascending=[True, True])
     sorted_rating_path = f'{config.raw_data_dir}/{config.dataset_name}/sorted.csv'
-    df.to_csv(sorted_rating_path, index=False)
+    # df.to_csv(sorted_rating_path, index=False)
 
     user_vocab = {}
     item_vocab = {}
     entity_vocab = {}
     relation_vocab = {}
 
-    read_item2entity_file(config.item2entity_path, item_vocab, entity_vocab)
-    train_data_dict, val_data_dict, test_data_dict = read_rating_file(sorted_rating_path, config.separator,
-                                                                      config.minimum_interactions,
-                                                                      user_vocab, item_vocab)
+    # read_item2entity_file(config.item2entity_path, item_vocab, entity_vocab)
+    # train_data_dict, val_data_dict, test_data_dict = read_rating_file(sorted_rating_path, config.separator,
+    #                                                                   config.minimum_interactions,
+    #                                                                   user_vocab, item_vocab)
 
-    pickle_dump(f'{config.preprocess_results_dir}/user_vocab.pkl', user_vocab)
-    pickle_dump(f'{config.preprocess_results_dir}/item_vocab.pkl', item_vocab)
-    pickle_dump(f'{config.preprocess_results_dir}/train_data_dict.pkl', train_data_dict)
-    pickle_dump(f'{config.preprocess_results_dir}/val_data_dict.pkl', val_data_dict)
-    pickle_dump(f'{config.preprocess_results_dir}/test_data_dict.pkl', test_data_dict)
+    # pickle_dump(f'{config.preprocess_results_dir}/user_vocab.pkl', user_vocab)
+    # pickle_dump(f'{config.preprocess_results_dir}/item_vocab.pkl', item_vocab)
+    # pickle_dump(f'{config.preprocess_results_dir}/train_data_dict.pkl', train_data_dict)
+    # pickle_dump(f'{config.preprocess_results_dir}/val_data_dict.pkl', val_data_dict)
+    # pickle_dump(f'{config.preprocess_results_dir}/test_data_dict.pkl', test_data_dict)
+
+    # user_vocab = pickle_load(f'{config.preprocess_results_dir}/user_vocab.pkl')
+    # item_vocab = pickle_load(f'{config.preprocess_results_dir}/item_vocab.pkl')
+    # train_data_dict = pickle_load(f'{config.preprocess_results_dir}/train_data_dict.pkl')
+    # val_data_dict = pickle_dump(f'{config.preprocess_results_dir}/val_data_dict.pkl')
+    # test_data_dict = pickle_dump(f'{config.preprocess_results_dir}/test_data_dict.pkl')
 
     n_hop_kg = read_kg(config.kg_path, entity_vocab, relation_vocab)
     pickle_dump(f'{config.preprocess_results_dir}/entity_vocab.pkl', entity_vocab)
