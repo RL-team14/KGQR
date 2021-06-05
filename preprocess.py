@@ -107,13 +107,18 @@ def read_rating_file(rating_path, separator, threshold, minimum_interactions, us
     return train_rating_dict, test_rating_dict, valid_rating_dict
 
 
-def read_kg(kg_path, entity_vocab, relation_vocab):
+def read_kg(kg_path, entity_vocab, relation_vocab, user_vocab, item_vocab):
     '''
         entity_vocab: Change c indicator in item2entity file to entity index in code
+        adj_mat: adjacency matrix of kg
+        feat_mat: TransE pretrained feature of kg
     '''
     print(f'Logging Info - Reading kg file: {kg_path}')
 
     kg = defaultdict(list)
+    print('# user:',len(user_vocab), '# item:', len(item_vocab), '# entity:', len(entity_vocab))
+    
+    #feat_mat = np.zeros((len(user_vocab)+len(item_vocab), 50))
     triples = 0
     with open(kg_path, encoding='utf8') as reader:
         for line in reader:
@@ -131,6 +136,14 @@ def read_kg(kg_path, entity_vocab, relation_vocab):
             kg[entity_vocab[head]].append((entity_vocab[head], entity_vocab[tail], relation_vocab[relation]))
             kg[entity_vocab[tail]].append((entity_vocab[tail], entity_vocab[head], relation_vocab[relation]))
 
+    print('# user:',len(user_vocab), '# item:', len(item_vocab), '# entity:', len(entity_vocab))
+    max_entity = max(entity_vocab.values())+1
+    adj_mat = np.zeros((max_entity, max_entity))
+    with open(kg_path, encoding='utf8') as reader:
+        for line in reader:
+            adj_mat[entity_vocab[head]][entity_vocab[tail]] = 1
+            adj_mat[entity_vocab[tail]][entity_vocab[head]] = 1
+
     n_hop_kg = {}
     for entity in entity_vocab:
         n_hop_kg[entity] = {1: [], 2: []}
@@ -140,7 +153,7 @@ def read_kg(kg_path, entity_vocab, relation_vocab):
         n_hop_kg[entity][2] = list(set(n_hop_kg[entity][2]))
 
     print(f'Logging Info - num of entities: {len(entity_vocab)}, num of relations: {len(relation_vocab)}')
-    return n_hop_kg
+    return n_hop_kg, adj_mat
 
 
 def process_data(config):
@@ -161,10 +174,11 @@ def process_data(config):
     pickle_dump(f'{config.preprocess_results_dir}/val_data_dict.pkl', val_data_dict)
     pickle_dump(f'{config.preprocess_results_dir}/test_data_dict.pkl', test_data_dict)
 
-    n_hop_kg = read_kg(config.kg_path, entity_vocab, relation_vocab)
+    n_hop_kg, adj_mat = read_kg(config.kg_path, entity_vocab, relation_vocab, user_vocab, item_vocab)
     pickle_dump(f'{config.preprocess_results_dir}/entity_vocab.pkl', entity_vocab)
     pickle_dump(f'{config.preprocess_results_dir}/relation_vocab.pkl', relation_vocab)
     pickle_dump(f'{config.preprocess_results_dir}/n_hop_kg.pkl', n_hop_kg)
+    np.save(f'{config.preprocess_results_dir}/kg_adj_mat.npy', adj_mat)
 
 
 if __name__ == '__main__':
