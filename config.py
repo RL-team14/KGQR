@@ -7,7 +7,7 @@ class Config:
         # Raw data file paths
         self.kg_path = f'{self.raw_data_dir}/{self.dataset_name}/kg.txt'
         self.item2entity_path = f'{self.raw_data_dir}/{self.dataset_name}/item_index2entity_id.txt'
-        self.rating_path = f'{self.raw_data_dir}/{self.dataset_name}/sorted.csv'
+        self.rating_path = f'{self.raw_data_dir}/{self.dataset_name}/ratings.csv'
 
         # Parameters to preprocess ratings.csv
         self.separator = ','
