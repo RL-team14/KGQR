@@ -30,7 +30,7 @@ class Simulator:
             t = np.where(item_ids == recommended_item_id)[0][0]
             return rates[t]
         except IndexError:  # User did not interacted with recommended item
-            return -1
+            return 0
 
 
 class Graph:

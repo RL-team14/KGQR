@@ -11,7 +11,7 @@ class Config:
 
         # Parameters to preprocess ratings.csv
         self.separator = ','
-        self.threshold = 4                  # Threshold of rating to distinguish pos and neg reaction
+        self.threshold = 3                  # Threshold of rating to distinguish pos and neg reaction
         self.minimum_interactions = 200     # Remove user with less than 200 interactions
 
         # Parameters to preprocess kg.txt
