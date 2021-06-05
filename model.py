@@ -86,3 +86,16 @@ class GCN(nn.Module):
         x = F.relu(self.gc1(self.entity_emb, self.adj_mat))
         x = self.gc2(x, self.adj_mat)
         return F.log_softmax(x, dim=1)
+# policy net
+class Net(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(20, 128) 
+        self.dense2 = nn.Linear(128, 128)
+        self.dense3 = nn.Linear(128, len(candidates_embeddings)?)
+    
+    def forward(self, x):
+        x = F.relu(self.dense1(x))
+        x = F.relu(self.dense2(x))
+        x = self.dense3(x)
+        return x
