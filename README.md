@@ -1,10 +1,20 @@
 # KGQR
 
-Implementation of ["Interactive Recommender System via Knowledge
+**Framework for interactive recommendation system based on reinforcement learning taking leverage of knowledge graph**
+
+### Contents
+1. [Baseline - KGQR](#baseline)
+2. [File Tree](#filetree)
+
+## Baseline <a name="baseline"></a>
+First trial to use knowledge graph prior on interactive recommendation system based on reinforcement learning. 
+
+["Interactive Recommender System via Knowledge
 Graph-enhanced Reinforcement Learning"](https://arxiv.org/pdf/2006.10389.pdf)
 
 
-### File Tree 
+
+## File Tree <a name="filetree"></a>
 - `raw_data`
   - `movie`
     - `ratrings.csv`: raw rating file of Movielens-20M dataset;
