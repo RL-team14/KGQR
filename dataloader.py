@@ -14,14 +14,14 @@ class TransE_dataset(Dataset):
                 if local_head in entity_vocab and local_tail in entity_vocab:
                     local_relation = relation_vocab[relation]
 
-                    positive_triples = torch.stack((torch.tensor(entity_vocab[local_head]-1), torch.tensor(local_relation), torch.tensor(entity_vocab[local_tail]-1)), dim=0)
+                    positive_triples = torch.stack((torch.tensor(entity_vocab[local_head]-1), torch.tensor(local_relation-1), torch.tensor(entity_vocab[local_tail]-1)), dim=0)
 
                     head_or_tail = torch.randint(high=2, size=(1,))
                     random_entities = random.choice(list(entity_vocab.keys()))
                     broken_heads = torch.where(head_or_tail == 1, random_entities, local_head).item()
                     broken_tails = torch.where(head_or_tail == 0, random_entities, local_tail).item()
 
-                    negative_triples = torch.stack((torch.tensor(entity_vocab[broken_heads]-1), torch.tensor(local_relation), torch.tensor(entity_vocab[broken_tails]-1)), dim=0)
+                    negative_triples = torch.stack((torch.tensor(entity_vocab[broken_heads]-1), torch.tensor(local_relation-1), torch.tensor(entity_vocab[broken_tails]-1)), dim=0)
                     
                     self.positive_triples.append(positive_triples)
                     self.negative_triples.append(negative_triples)
