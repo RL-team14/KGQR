@@ -7,6 +7,7 @@ Framework for interactive recommendation system based on reinforcement learning 
 
 **Contents table**
 1. [Baseline - KGQR](#baseline)
+2. [How to start?](#start)
 2. [File Tree](#filetree)
 <br/><br/>
 
@@ -17,8 +18,26 @@ KGQR is the first trial to use knowledge graph prior on interactive recommendati
 ["Interactive Recommender System via Knowledge
 Graph-enhanced Reinforcement Learning"](https://arxiv.org/pdf/2006.10389.pdf)
 <br/><br/>
+![KGQR](./resource/KGQR.png)
 
-## File Tree <a name="filetree"></a>
+## How to start? <a name="start"></a>
+1. Download [ratings.csv](https://grouplens.org/datasets/movielens/20m/) to raw_data folder. 
+
+    In raw_data folder, there should be ratings.csv, kg.txt, item_index2enity_id.txt files
+  
+2. Preprocess rating file and knowledge graph file
+
+    This will generate data folder and sorting.csv 
+     ```shell script
+        python preprocess.py  
+     ```
+3. Train the model 
+     ```shell script
+        python train.py 
+     ```
+
+
+## File Tree (After preprocessing) <a name="filetree"></a>
 - `raw_data`
   - `movie`
     - `kg.txt`: knowledge graph file;
@@ -34,4 +53,5 @@ Graph-enhanced Reinforcement Learning"](https://arxiv.org/pdf/2006.10389.pdf)
           n_hop_kg.pkl[entity_id][1] = list of 1-hop entity ids
           n_hop_kg.pkl[entity_id][2] = list of 2-hop entity ids
         ```  
+    - `kg_adj_mat.npy`: Knowledge graph's adjacent nodes information;   
     - `*_data_dict.pkl`: can refer user's rating history sorted in chronological order by user_id;

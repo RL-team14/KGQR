@@ -114,7 +114,7 @@ def read_kg(kg_path, entity_vocab, relation_vocab, user_vocab, item_vocab):
 	print(f'Logging Info - Reading kg file: {kg_path}')
 
 	kg = defaultdict(list)
-	print('# user:',len(user_vocab), '# item:', len(item_vocab), '# entity:', len(entity_vocab))
+	print('# user:', len(user_vocab), '# item:', len(item_vocab), '# entity:', len(entity_vocab))
 
 	entity_freq = {}
 	with open(kg_path, encoding='utf8') as reader:
@@ -153,7 +153,7 @@ def read_kg(kg_path, entity_vocab, relation_vocab, user_vocab, item_vocab):
 			kg[entity_vocab[head]].append(entity_vocab[tail])
 			kg[entity_vocab[tail]].append(entity_vocab[head])
 
-	print('# user:',len(user_vocab), '# item:', len(item_vocab), '# entity:', len(entity_vocab))
+	print('# user:', len(user_vocab), '# item:', len(item_vocab), '# entity:', len(entity_vocab))
 	max_entity = max(entity_vocab.values())
 	adj_mat = np.zeros((max_entity, max_entity))
 
@@ -181,10 +181,10 @@ def process_data(config):
 	os.makedirs(config.preprocess_results_dir, exist_ok=True)
 
 	# Sort rating file based on user id and timestamp
-	# df = pd.read_csv(f'{config.raw_data_dir}/{config.dataset_name}/ratings.csv', delimiter=',')
-	# df = df.sort_values(by=['userId', 'timestamp'], ascending=[True, True])
-	# sorted_rating_path = f'{config.raw_data_dir}/{config.dataset_name}/sorted.csv'
-	# df.to_csv(sorted_rating_path, index=False)
+	df = pd.read_csv(f'{config.raw_data_dir}/{config.dataset_name}/ratings.csv', delimiter=',')
+	df = df.sort_values(by=['userId', 'timestamp'], ascending=[True, True])
+	sorted_rating_path = f'{config.raw_data_dir}/{config.dataset_name}/sorted.csv'
+	df.to_csv(sorted_rating_path, index=False)
 
 	user_vocab = {}
 	item_vocab = {}
@@ -192,9 +192,9 @@ def process_data(config):
 	relation_vocab = {}
 
 	read_item2entity_file(config.item2entity_path, item_vocab, entity_vocab)
-	train_data_dict, val_data_dict, test_data_dict = read_rating_file(config.rating_path, config.separator,
-																	 config.minimum_interactions,
-																	user_vocab, item_vocab, entity_vocab)
+	train_data_dict, val_data_dict, test_data_dict = read_rating_file(sorted_rating_path, config.separator,
+																	  config.minimum_interactions,
+																	  user_vocab, item_vocab, entity_vocab)
 	pickle_dump(f'{config.preprocess_results_dir}/user_vocab.pkl', user_vocab)
 	pickle_dump(f'{config.preprocess_results_dir}/item_vocab.pkl', item_vocab)
 	pickle_dump(f'{config.preprocess_results_dir}/train_data_dict.pkl', train_data_dict)
