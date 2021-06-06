@@ -3,86 +3,112 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
-
+import numpy as np
+from utils import pickle_load
 
 class GraphConvolution(nn.Module):
-    """
-    Simple GCN layer, similar to https://arxiv.org/abs/1609.02907
-    """
+	"""
+	Simple GCN layer, similar to https://arxiv.org/abs/1609.02907
+	"""
 
-    def __init__(self, in_features, out_features, bias=True):
-        super(GraphConvolution, self).__init__()
-        self.in_features = in_features
-        self.out_features = out_features
-        self.weight = Parameter(torch.FloatTensor(in_features, out_features))
-        if bias:
-            self.bias = Parameter(torch.FloatTensor(out_features))
-        else:
-            self.register_parameter('bias', None)
-        self.reset_parameters()
+	def __init__(self, in_features, out_features, bias=True):
+		super(GraphConvolution, self).__init__()
+		self.in_features = in_features
+		self.out_features = out_features
+		self.weight = nn.Linear(in_features, out_features)
+		'''
+		self.weight = Parameter(torch.FloatTensor(in_features, out_features))
+		if bias:
+			self.bias = Parameter(torch.FloatTensor(out_features))
+		else:
+			self.register_parameter('bias', None)
+		self.reset_parameters()
+		'''
+		self.adj = torch.FloatTensor(np.load('./data/movie/kg_adj_mat.npy'))
 
-    def reset_parameters(self):
-        stdv = 1. / math.sqrt(self.weight.size(1))
-        self.weight.data.uniform_(-stdv, stdv)
-        if self.bias is not None:
-            self.bias.data.uniform_(-stdv, stdv)
+	def reset_parameters(self):
+		stdv = 1. / math.sqrt(self.weight.size(1))
+		self.weight.data.uniform_(-stdv, stdv)
+		if self.bias is not None:
+			self.bias.data.uniform_(-stdv, stdv)
 
-    def forward(self, input, adj):
-        support = torch.mm(input, self.weight)
-        output = torch.spmm(adj, support)
-        if self.bias is not None:
-            return output + self.bias
-        else:
-            return output
+	def forward(self, input):
+		#support = torch.mm(input, self.weight)
+		support = self.weight(input)
+		output = torch.spmm(self.adj, support)
+		return output
+		'''
+		if self.bias is not None:
+			return output + self.bias
+		else:
+			return output
+		'''
 
-    def __repr__(self):
-        return self.__class__.__name__ + ' (' \
-               + str(self.in_features) + ' -> ' \
-               + str(self.out_features) + ')'
+	def __repr__(self):
+		return self.__class__.__name__ + ' (' \
+			   + str(self.in_features) + ' -> ' \
+			   + str(self.out_features) + ')'
 
 
-class GCN(nn.Module):
-    def __init__(self, nfeat, entity_vocab, relation_vocab, adj_mat):
-        super(GCN, self).__init__()
+class GCN_GRU(nn.Module):
+	def __init__(self, config, nfeat, entity_vocab, relation_vocab):
+		super(GCN_GRU, self).__init__()
 
-        self.entity_emb = nn.Embedding(num_embeddings=len(entity_vocab),
-                                    embedding_dim=nfeat,
-                                    padding_idx=len(entity_vocab))
-        uniform_range = 6 / np.sqrt(nfeat)
-        self.entity_emb.weight.data.uniform_(-uniform_range, uniform_range)
+		entity_max = max(entity_vocab.values())
+		relation_max = max(relation_vocab.values())
+		self.n_hop_kg = pickle_load(f'{config.preprocess_results_dir}/n_hop_kg.pkl')
 
-        self.relation_emb = nn.Embedding(num_embeddings=len(relation_vocab),
-                                    embedding_dim=nfeat,
-                                    padding_idx=len(relation_vocab))
-        uniform_range = 6 / np.sqrt(nfeat)
-        self.relation_emb.weight.data.uniform_(-uniform_range, uniform_range)
+		self.entity_emb = torch.randn(entity_max, nfeat)
+		uniform_range = 6 / np.sqrt(nfeat)
+		self.entity_emb.uniform_(-uniform_range, uniform_range)
 
-        self.adj_mat = adj_mat
+		self.relation_emb = torch.randn(relation_max, nfeat)
+		uniform_range = 6 / np.sqrt(nfeat)
+		self.relation_emb.uniform_(-uniform_range, uniform_range)
 
-        self.gc1 = GraphConvolution(nfeat, nfeat)
-        self.gc2 = GraphConvolution(nfeat, nfeat)
-        
-        self.criterion = nn.MarginRankingLoss(margin=1.0)
+		self.gc1 = GraphConvolution(nfeat, nfeat)
+		self.gc2 = GraphConvolution(nfeat, nfeat)
 
-    def distance(self, triplets):
-        assert triplets.size()[1] == 3
-        heads = int(triplets[:, 0])
-        relations = triplets[:, 1]
-        tails = int(triplets[:, 2])
-        return (self.entity_emb(heads) + self.relation_emb(relations) - self.entity_emb(tails)).norm(p=self.norm, dim=1)
+		self.h = torch.randn(2,1,20)
+		self.gru = nn.GRU(50, 20, 2)
+		
+		self.criterion = nn.MarginRankingLoss(margin=1.0)
 
-    def TransE_forward(self, pos_triplet, neg_triplet):
-        # -1 to avoid nan for OOV vector
-        self.entity_emb.weight.data[:-1, :].div_(self.entity_emb.weight.data[:-1, :].norm(p=2, dim=1, keepdim=True))
+	def get_n_hop(self, entity_id):
+		return self.n_hop_kg[entity_id]
 
-        pos_distance = self.distance(pos_triplet)
-        neg_distance = self.distance(neg_triplet)
+	def distance(self, triplets):
+		assert triplets.size()[1] == 3
+		heads = triplets[:, 0]
+		relations = triplets[:, 1]
+		tails = triplets[:, 2]
+		return (self.entity_emb.weight[heads] + self.relation_emb.weight[relations] - self.entity_emb.weight[tails]).norm(p=1, dim=1)
 
-        target = torch.tensor([-1], dtype=torch.long)
+	def TransE_forward(self, pos_triplet, neg_triplet):
+		# -1 to avoid nan for OOV vector
+		self.entity_emb.weight.data[:-1, :].div_(self.entity_emb.weight.data[:-1, :].norm(p=2, dim=1, keepdim=True))
 
-        return self.criterion(pos_distance, neg_distance, target)
+		pos_distance = self.distance(pos_triplet)
+		neg_distance = self.distance(neg_triplet)
 
-    def forward(self, x):
-        x = F.relu(self.gc1(self.entity_emb, self.adj_mat))
-        x = self.gc2(x, self.adj_mat)
-        return F.log_softmax(x, dim=1)
+		target = torch.tensor([-1], dtype=torch.long)
+
+		return self.criterion(pos_distance, neg_distance, target)
+
+	def forward_GCN(self, x):
+		# GCN
+		out = F.relu(self.gc1(self.entity_emb))
+		out = self.gc2(out)
+		out = F.log_softmax(out, dim=1)[x]
+		return out
+
+	def forward(self, x):
+		# GCN
+		out = F.relu(self.gc1(self.entity_emb))
+		out = self.gc2(out)
+		out = F.log_softmax(out, dim=1)[x].reshape(1,1,-1)
+	
+		# GRU
+		out, self.h = self.gru(out, self.h)
+		out = out.reshape(-1)
+		return out
