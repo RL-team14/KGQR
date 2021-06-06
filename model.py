@@ -58,13 +58,13 @@ class GCN_GRU(nn.Module):
 		relation_max = max(relation_vocab.values())
 		self.n_hop_kg = pickle_load(f'{config.preprocess_results_dir}/n_hop_kg.pkl')
 
-		self.entity_emb = torch.randn(entity_max, nfeat)
+		self.entity_emb = torch.nn.Embedding(entity_max, nfeat)
 		uniform_range = 6 / np.sqrt(nfeat)
-		self.entity_emb.uniform_(-uniform_range, uniform_range)
+		self.entity_emb.weight.data.uniform_(-uniform_range, uniform_range)
 
-		self.relation_emb = torch.randn(relation_max, nfeat)
+		self.relation_emb = torch.nn.Embedding(relation_max, nfeat)
 		uniform_range = 6 / np.sqrt(nfeat)
-		self.relation_emb.uniform_(-uniform_range, uniform_range)
+		self.relation_emb.weight.data.uniform_(-uniform_range, uniform_range)
 
 		self.gc1 = GraphConvolution(nfeat, nfeat)
 		self.gc2 = GraphConvolution(nfeat, nfeat)
@@ -97,14 +97,14 @@ class GCN_GRU(nn.Module):
 
 	def forward_GCN(self, x):
 		# GCN
-		out = F.relu(self.gc1(self.entity_emb))
+		out = F.relu(self.gc1(self.entity_emb.weight))
 		out = self.gc2(out)
 		out = F.log_softmax(out, dim=1)[x]
 		return out
 
 	def forward(self, x):
 		# GCN
-		out = F.relu(self.gc1(self.entity_emb))
+		out = F.relu(self.gc1(self.entity_emb.weight))
 		out = self.gc2(out)
 		out = F.log_softmax(out, dim=1)[x].reshape(1,1,-1)
 	

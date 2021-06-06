@@ -10,10 +10,9 @@ def pretrain_embedding(config, entity_vocab, relation_vocab, model, optimizer):
 	model.train()
 
 	dataloader = get_TransE_dataloader(config, entity_vocab, relation_vocab)
-	for epoch in range(100):
+	for epoch in range(200):
 		total_loss = 0
-		for positive_triples, negative_triples in dataloader:
-
+		for positive_triples, negative_triples in dataloader:	
 			optimizer.zero_grad()
 			loss = model.TransE_forward(positive_triples, negative_triples)
 			loss.backward()
@@ -89,6 +88,6 @@ if __name__ == '__main__':
 	print('Load embedding_pretrained model...')
 	path = './embedding_pretrained.pth'
 	model.load_state_dict(torch.load(path))
-	
+
 	print('Train...')
 	train(Config(), item_vocab, model, optimizer)
