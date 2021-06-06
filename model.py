@@ -112,3 +112,15 @@ class GCN_GRU(nn.Module):
 		out, self.h = self.gru(out, self.h)
 		out = out.reshape(-1)
 		return out
+class Net(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(20, 128) 
+        self.dense2 = nn.Linear(128, 128)
+        self.dense3 = nn.Linear(128, 3)
+    
+    def forward(self, x):
+        x = F.relu(self.dense1(x))
+        x = F.relu(self.dense2(x))
+        x = self.dense3(x)
+        return x
