@@ -1,13 +1,13 @@
 # KGQR
-<br/>
+<br>
 
 ![Overview](./resource/overview.png)
-<br/><br/><br/>
+<br><br><br>
 Framework for interactive recommendation system based on reinforcement learning taking leverage of knowledge graph
 
 **Contents table**
 1. [Baseline - KGQR](#baseline)
-2. [How to start?](#start)
+2. [Getting stated](#start)
 2. [File Tree](#filetree)
 <br/><br/>
 
@@ -17,10 +17,12 @@ KGQR is the first trial to use knowledge graph prior on interactive recommendati
 
 ["Interactive Recommender System via Knowledge
 Graph-enhanced Reinforcement Learning"](https://arxiv.org/pdf/2006.10389.pdf)
-<br/><br/>
+<br><br>
 ![KGQR](./resource/KGQR.png)
 
-## How to start? <a name="start"></a>
+## Getting stated <a name="start"></a>
+> python >= 3.7 <br>
+
 1. Download [ratings.csv](https://grouplens.org/datasets/movielens/20m/) to raw_data folder. 
 
     In raw_data folder, there should be ratings.csv, kg.txt, item_index2enity_id.txt files
